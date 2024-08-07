@@ -1,7 +1,17 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/vsomera/focusmode/hosts"
+)
 
 func main() {
-	fmt.Println("work in progress")
+	domains, err := hosts.GetDomainsFromHost()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(domains)
+	fmt.Println(len(domains))
 }

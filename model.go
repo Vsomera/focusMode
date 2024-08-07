@@ -1,9 +1,5 @@
 package main
 
-import (
-	tea "github.com/charmbracelet/bubbletea"
-)
-
 type sessionState uint
 
 type model struct {
@@ -11,18 +7,20 @@ type model struct {
 	state   sessionState
 }
 
-func (m model) Init() tea.Cmd {
-	return nil
+func newModel() *model {
+	return &model{}
 }
 
-func (m model) Update() (tea.Model, tea.Cmd) {
+func (m model) Init() {}
+
+func (m model) Update() {
 	// q => quits the program
 	// arrows => pick options
 	// enter or space => select options
 	// add mode if needed ...
 }
 
-func (m model) View() string {
+func (m model) View() {
 	// implement list-fancy view from bbt
 	// https://github.com/charmbracelet/bubbletea/blob/master/examples/list-fancy/README.md
 }
