@@ -2,7 +2,6 @@ package hosts
 
 import (
 	"bufio"
-	"bytes"
 	"io"
 	"os"
 	"regexp"
@@ -18,15 +17,11 @@ func GetDomainsFromHost() ([]string, error) {
 	if err != nil {
 		return domains, err
 	}
-
 	defer hostsFile.Close()
 
-	data, err := io.ReadAll(hostsFile)
-	if err != nil {
-		return domains, err
-	}
-	// remove BOM (Byte Order Mark) if present at the beginning of the file
-	data, err = io.ReadAll(utfbom.SkipOnly(bytes.NewReader(data)))
+	// skip BOM if present
+	reader := utfbom.SkipOnly(bufio.NewReader(hostsFile))
+	data, err := io.ReadAll(reader)
 	if err != nil {
 		return domains, err
 	}

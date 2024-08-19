@@ -33,7 +33,7 @@ func TestExtractDomainsFromData(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "test file with no comments",
+			name: "extracting domains with no comments",
 			data: `0.0.0.0 www.instagram.com
 			0.0.0.0 www.facebook.com
 			192.168.1.83 host.docker.internal
