@@ -20,7 +20,7 @@ func TestExtractDomainsFromData(t *testing.T) {
 			wantErr:     false,
 		},
 		{
-			name: "extracting domains",
+			name: "extracting domains with comments",
 			data: `# Copyright (c) 1993-2009 Microsoft Corp.
 			127.0.0.1 example.host
 			# comment
@@ -29,6 +29,22 @@ func TestExtractDomainsFromData(t *testing.T) {
 			wantDomains: []string{
 				"example.host",
 				"example.host",
+			},
+			wantErr: false,
+		},
+		{
+			name: "test file with no comments",
+			data: `0.0.0.0 www.instagram.com
+			0.0.0.0 www.facebook.com
+			192.168.1.83 host.docker.internal
+			192.168.1.83 gateway.docker.internal
+			127.0.0.1 kubernetes.docker.internal`,
+			wantDomains: []string{
+				"www.instagram.com",
+				"www.facebook.com",
+				"host.docker.internal",
+				"gateway.docker.internal",
+				"kubernetes.docker.internal",
 			},
 			wantErr: false,
 		},

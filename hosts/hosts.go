@@ -2,10 +2,13 @@ package hosts
 
 import (
 	"bufio"
+	"bytes"
 	"io"
 	"os"
 	"regexp"
 	"strings"
+
+	"github.com/dimchansky/utfbom"
 )
 
 // extracts data from hosts file
@@ -19,6 +22,11 @@ func GetDomainsFromHost() ([]string, error) {
 	defer hostsFile.Close()
 
 	data, err := io.ReadAll(hostsFile)
+	if err != nil {
+		return domains, err
+	}
+	// remove BOM (Byte Order Mark) if present at the beginning of the file
+	data, err = io.ReadAll(utfbom.SkipOnly(bytes.NewReader(data)))
 	if err != nil {
 		return domains, err
 	}
@@ -55,7 +63,7 @@ func extractDomainsFromData(data string) ([]string, error) {
 			line = strings.TrimSpace(line[:idx])
 		}
 
-		if line != " " && line != "" {
+		if line != "" {
 			domains = append(domains, line)
 		}
 
