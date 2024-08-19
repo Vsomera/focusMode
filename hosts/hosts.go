@@ -10,6 +10,11 @@ import (
 	"github.com/dimchansky/utfbom"
 )
 
+const (
+	CommentStart = "#focusmode:start"
+	CommentEnd   = "#focusmode:end"
+)
+
 // extracts data from hosts file
 func GetDomainsFromHost() ([]string, error) {
 	domains := []string{}
@@ -37,29 +42,43 @@ func GetDomainsFromHost() ([]string, error) {
 // given data from bytes (which is converted from string) extract the domains
 func extractDomainsFromData(data string) ([]string, error) {
 	domains := []string{}
+	inFocus := false
 
-	re := regexp.MustCompile(`^\s*\d{1,3}(?:\.\d{1,3}){3}\s+`) // regex to match ip addresses
 	scanner := bufio.NewScanner(strings.NewReader(data))
 
 	for scanner.Scan() {
 
 		line := strings.ToLower(strings.TrimSpace(scanner.Text()))
 
-		// skip comments or empty lines
-		if line == "" || strings.HasPrefix(line, "#") {
+		// check if domains are in focus start and end markers
+		if strings.Contains(line, CommentStart) {
+			inFocus = true
+			continue
+		}
+		if strings.Contains(line, CommentEnd) {
+			inFocus = false
 			continue
 		}
 
-		// remove ip address and trailing spaces
-		line = re.ReplaceAllString(line, "")
+		// only append domains if domains are within focus markers
+		if inFocus {
+			// skip comments or empty lines
+			if line == "" || strings.HasPrefix(line, "#") {
+				continue
+			}
 
-		// remove inline comments
-		if idx := strings.Index(line, "#"); idx != -1 {
-			line = strings.TrimSpace(line[:idx])
-		}
+			// remove ip address and trailing spaces
+			re := regexp.MustCompile(`^\s*\d{1,3}(?:\.\d{1,3}){3}\s+`)
+			line = re.ReplaceAllString(line, "")
 
-		if line != "" {
-			domains = append(domains, line)
+			// remove inline comments
+			if idx := strings.Index(line, "#"); idx != -1 {
+				line = strings.TrimSpace(line[:idx])
+			}
+
+			if line != "" {
+				domains = append(domains, line)
+			}
 		}
 
 	}

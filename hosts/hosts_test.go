@@ -20,33 +20,42 @@ func TestExtractDomainsFromData(t *testing.T) {
 			wantErr:     false,
 		},
 		{
-			name: "extracting domains with comments",
+			name: "extracting domains outside of markers",
 			data: `# Copyright (c) 1993-2009 Microsoft Corp.
 			127.0.0.1 example.host
 			# comment
 			127.0.0.1 example.host
 			# comment`,
+			wantDomains: []string{},
+			wantErr:     false,
+		},
+		{
+			name: "extracting domains within markers",
+			data: `0.0.0.0 www.instagram.com
+			0.0.0.0 www.facebook.com
+			192.168.1.83 host.docker.internal
+			#focusmode:start
+			0.0.0.0 host.docker.internal
+			127.0.0.1 gateway.docker.internal
+			#focusmode:end
+			192.168.1.83 gateway.docker.internal
+			127.0.0.1 kubernetes.docker.internal`,
 			wantDomains: []string{
-				"example.host",
-				"example.host",
+				"host.docker.internal",
+				"gateway.docker.internal",
 			},
 			wantErr: false,
 		},
 		{
-			name: "extracting domains with no comments",
-			data: `0.0.0.0 www.instagram.com
-			0.0.0.0 www.facebook.com
-			192.168.1.83 host.docker.internal
-			192.168.1.83 gateway.docker.internal
-			127.0.0.1 kubernetes.docker.internal`,
-			wantDomains: []string{
-				"www.instagram.com",
-				"www.facebook.com",
-				"host.docker.internal",
-				"gateway.docker.internal",
-				"kubernetes.docker.internal",
-			},
-			wantErr: false,
+			name: "extracting domains with empty markers",
+			data: `
+			0.0.0.0 www.instagram.com
+			#focusmode:start
+			#focusmode:end
+			127.0.0.1 gateway.docker.internal
+			`,
+			wantDomains: []string{},
+			wantErr:     false,
 		},
 	}
 
