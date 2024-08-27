@@ -11,8 +11,9 @@ import (
 )
 
 const (
-	CommentStart = "#focusmode:start"
-	CommentEnd   = "#focusmode:end"
+	defaultIpAddress = "127.0.0.1"
+	commentStart     = "#focusmode:start"
+	commentEnd       = "#focusmode:end"
 )
 
 // extracts data from hosts file
@@ -39,6 +40,39 @@ func GetDomainsFromHost() ([]string, error) {
 	return domains, nil
 }
 
+// given a slice of hosts, appends host to hosts file
+func AddDomainsToHost(domains []string) error {
+	hostsFile, err := os.OpenFile(hostsPath, os.O_CREATE|os.O_RDWR, 0600)
+	if err != nil {
+		return err
+	}
+	defer hostsFile.Close()
+
+	// skip BOM if present
+	reader := utfbom.SkipOnly(bufio.NewReader(hostsFile))
+	data, err := io.ReadAll(reader)
+	if err != nil {
+		return err
+	}
+
+	newData, err := updateHostData(string(data), domains)
+	if err != nil {
+		return err
+	}
+
+	if _, err := hostsFile.Seek(0, 0); err != nil {
+		return err
+	}
+	if _, err := hostsFile.WriteString(newData); err != nil {
+		return err
+	}
+	if err := hostsFile.Truncate(int64(len(newData))); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // given data from bytes (which is converted from string) extract the domains
 func extractDomainsFromData(data string) ([]string, error) {
 	domains := []string{}
@@ -51,11 +85,11 @@ func extractDomainsFromData(data string) ([]string, error) {
 		line := strings.ToLower(strings.TrimSpace(scanner.Text()))
 
 		// check if domains are in focus start and end markers
-		if strings.Contains(line, CommentStart) {
+		if line == commentStart {
 			inFocus = true
 			continue
 		}
-		if strings.Contains(line, CommentEnd) {
+		if line == commentEnd {
 			inFocus = false
 			continue
 		}
@@ -88,4 +122,39 @@ func extractDomainsFromData(data string) ([]string, error) {
 	}
 
 	return domains, nil
+}
+
+func updateHostData(initData string, domains []string) (string, error) {
+	inFocus := false
+	newData := ""
+
+	scanner := bufio.NewScanner(strings.NewReader(initData))
+	for scanner.Scan() {
+
+		line := strings.ToLower(strings.TrimSpace(scanner.Text()))
+
+		if line == commentStart {
+			inFocus = true
+			continue
+		} else if line == commentEnd {
+			inFocus = false
+			continue
+		}
+
+		if !inFocus {
+			newData += line + "\n"
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return initData, err
+	}
+
+	newData += commentStart + "\n"
+	for _, d := range domains {
+		newData += defaultIpAddress + " " + d + "\n"
+	}
+	newData += commentEnd + "\n"
+
+	return newData, nil
 }

@@ -7,11 +7,15 @@ import (
 )
 
 func main() {
-	domains, err := hosts.GetDomainsFromHost()
+	domains := []string{"www.instagram.com", "www.facebook.com"}
+	err := hosts.AddDomainsToHost(domains)
 	if err != nil {
 		fmt.Println(err)
-		return
 	}
-	fmt.Println(domains)
-	fmt.Println(len(domains))
+	newDomains, err := hosts.GetDomainsFromHost()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println(newDomains)
 }
