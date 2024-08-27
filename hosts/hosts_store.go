@@ -26,7 +26,6 @@ func NewHostsStore() *HostsStore {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	defer hostsFile.Close()
 	return &HostsStore{hostsFile: hostsFile}
 }
 
@@ -81,6 +80,18 @@ func (hs *HostsStore) AddDomainsToHost(domains []string) error {
 		return err
 	}
 
+	return nil
+}
+
+// close file
+func (hs *HostsStore) Close() error {
+	if hs.hostsFile != nil {
+		err := hs.hostsFile.Close()
+		if err != nil {
+			return err
+		}
+		hs.hostsFile = nil
+	}
 	return nil
 }
 

@@ -20,6 +20,8 @@ func TestHostsFileStore(t *testing.T) {
 		defer cleanFile()
 
 		store := &HostsStore{hostsFile: tempHostsFile}
+		defer store.Close()
+
 		got, _ := store.GetDomainsFromHost()
 		want := []string{"www.instagram.com", "www.facebook.com"}
 
@@ -37,6 +39,8 @@ func TestHostsFileStore(t *testing.T) {
 		defer cleanFile()
 
 		store := &HostsStore{hostsFile: tempHostsFile}
+		defer store.Close()
+
 		got, _ := store.GetDomainsFromHost()
 		want := []string{}
 
@@ -51,6 +55,8 @@ func TestHostsFileStore(t *testing.T) {
 		store := &HostsStore{hostsFile: tempHostsFile}
 
 		got := []string{"www.instagram.com", "www.youtube.com", "www.facebook.com"}
+		defer store.Close()
+
 		store.AddDomainsToHost(got)
 		want, _ := store.GetDomainsFromHost()
 
