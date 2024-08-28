@@ -3,6 +3,7 @@ package hosts
 import (
 	"bufio"
 	"io"
+	"log"
 	"os"
 	"regexp"
 	"strings"
@@ -16,17 +17,28 @@ const (
 	commentEnd       = "#focusmode:end"
 )
 
-// extracts data from hosts file
-func GetDomainsFromHost() ([]string, error) {
-	domains := []string{}
+type HostsStore struct {
+	hostsFile *os.File
+}
+
+func NewHostsStore() *HostsStore {
 	hostsFile, err := os.OpenFile(hostsPath, os.O_CREATE|os.O_RDWR, 0600)
 	if err != nil {
+		log.Fatal(err.Error())
+	}
+	return &HostsStore{hostsFile: hostsFile}
+}
+
+func (hs *HostsStore) GetDomainsFromHost() ([]string, error) {
+	domains := []string{}
+
+	// reset file pointer
+	if _, err := hs.hostsFile.Seek(0, io.SeekStart); err != nil {
 		return domains, err
 	}
-	defer hostsFile.Close()
 
 	// skip BOM if present
-	reader := utfbom.SkipOnly(bufio.NewReader(hostsFile))
+	reader := utfbom.SkipOnly(bufio.NewReader(hs.hostsFile))
 	data, err := io.ReadAll(reader)
 	if err != nil {
 		return domains, err
@@ -40,16 +52,14 @@ func GetDomainsFromHost() ([]string, error) {
 	return domains, nil
 }
 
-// given a slice of hosts, appends host to hosts file
-func AddDomainsToHost(domains []string) error {
-	hostsFile, err := os.OpenFile(hostsPath, os.O_CREATE|os.O_RDWR, 0600)
-	if err != nil {
+func (hs *HostsStore) AddDomainsToHost(domains []string) error {
+	// reset file pointer
+	if _, err := hs.hostsFile.Seek(0, io.SeekStart); err != nil {
 		return err
 	}
-	defer hostsFile.Close()
 
 	// skip BOM if present
-	reader := utfbom.SkipOnly(bufio.NewReader(hostsFile))
+	reader := utfbom.SkipOnly(bufio.NewReader(hs.hostsFile))
 	data, err := io.ReadAll(reader)
 	if err != nil {
 		return err
@@ -60,16 +70,28 @@ func AddDomainsToHost(domains []string) error {
 		return err
 	}
 
-	if _, err := hostsFile.Seek(0, 0); err != nil {
+	if _, err := hs.hostsFile.Seek(0, 0); err != nil {
 		return err
 	}
-	if _, err := hostsFile.WriteString(newData); err != nil {
+	if _, err := hs.hostsFile.WriteString(newData); err != nil {
 		return err
 	}
-	if err := hostsFile.Truncate(int64(len(newData))); err != nil {
+	if err := hs.hostsFile.Truncate(int64(len(newData))); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// close file
+func (hs *HostsStore) Close() error {
+	if hs.hostsFile != nil {
+		err := hs.hostsFile.Close()
+		if err != nil {
+			return err
+		}
+		hs.hostsFile = nil
+	}
 	return nil
 }
 
@@ -84,7 +106,6 @@ func extractDomainsFromData(data string) ([]string, error) {
 
 		line := strings.ToLower(strings.TrimSpace(scanner.Text()))
 
-		// check if domains are in focus start and end markers
 		if line == commentStart {
 			inFocus = true
 			continue
@@ -94,22 +115,16 @@ func extractDomainsFromData(data string) ([]string, error) {
 			continue
 		}
 
-		// only append domains if domains are within focus markers
 		if inFocus {
-			// skip comments or empty lines
 			if line == "" || strings.HasPrefix(line, "#") {
 				continue
 			}
-
-			// remove ip address and trailing spaces
 			re := regexp.MustCompile(`^\s*\d{1,3}(?:\.\d{1,3}){3}\s+`)
 			line = re.ReplaceAllString(line, "")
 
-			// remove inline comments
 			if idx := strings.Index(line, "#"); idx != -1 {
 				line = strings.TrimSpace(line[:idx])
 			}
-
 			if line != "" {
 				domains = append(domains, line)
 			}
@@ -124,6 +139,7 @@ func extractDomainsFromData(data string) ([]string, error) {
 	return domains, nil
 }
 
+// updates and overwrites domains within start-end markers
 func updateHostData(initData string, domains []string) (string, error) {
 	inFocus := false
 	newData := ""

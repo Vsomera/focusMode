@@ -2,20 +2,25 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/vsomera/focusmode/hosts"
 )
 
 func main() {
-	domains := []string{"www.instagram.com", "www.facebook.com"}
-	err := hosts.AddDomainsToHost(domains)
+	store := hosts.NewHostsStore()
+	defer store.Close()
+
+	newDomains := []string{"www.facebook.com", "www.instagram.com"}
+	err := store.AddDomainsToHost(newDomains)
 	if err != nil {
-		fmt.Println(err)
-	}
-	newDomains, err := hosts.GetDomainsFromHost()
-	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
 	}
 
-	fmt.Println(newDomains)
+	domains, err := store.GetDomainsFromHost()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(domains)
 }
