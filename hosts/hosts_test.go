@@ -6,62 +6,99 @@ import (
 	"testing"
 )
 
-func TestHostsFileStore(t *testing.T) {
-	t.Run("get domains between markers", func(t *testing.T) {
-		tempHostsFile, cleanFile := createTempFile(t, `
-		# comment
-		# comment
-		0.0.0.0 www.youtube.com
-		#focusmode:start
-		127.0.0.1 www.instagram.com
-		0.0.0.0 www.facebook.com
-		#focusmode:end
-		`)
-		defer cleanFile()
+type HostTest []struct {
+	name         string
+	initialData  string
+	expectedData []string
+}
 
-		store := &HostsStore{hostsFile: tempHostsFile}
-		defer store.Close()
+func TestGetDomainsFromHost(t *testing.T) {
+	tests := HostTest{
+		{
+			name: "get domains within markers",
+			initialData: `
+			0.0.0.0 www.youtube.com
+			#focusmode:start
+			127.0.0.1 www.instagram.com
+			127.0.0.1 www.facebook.com
+			#focusmode:end
+			`,
+			expectedData: []string{"www.instagram.com", "www.facebook.com"},
+		},
+		{
+			name: "no domains within markers",
+			initialData: `
+			127.0.0.1 www.google.com
+			#focusmode:start
+			#focusmode:end
+			`,
+			expectedData: []string{},
+		},
+		{
+			name: "no markers present",
+			initialData: `
+        	127.0.0.1 www.google.com
+			`,
+			expectedData: []string{},
+		},
+	}
 
-		got, _ := store.GetDomainsFromHost()
-		want := []string{"www.instagram.com", "www.facebook.com"}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tempHostsFile, cleanFile := createTempFile(t, tt.initialData)
+			defer cleanFile()
 
-		assertDomains(t, got, want)
-	})
-	t.Run("domains outside of markers", func(t *testing.T) {
-		tempHostsFile, cleanFile := createTempFile(t, `
-		# comment
-		# comment
-		0.0.0.0 www.youtube.com
-		127.0.0.1 www.instagram.com
-		0.0.0.0 www.facebook.com
-		# comment
-		`)
-		defer cleanFile()
+			store := &HostsStore{hostsFile: tempHostsFile}
+			defer store.Close()
 
-		store := &HostsStore{hostsFile: tempHostsFile}
-		defer store.Close()
+			got, err := store.GetDomainsFromHost()
+			if err != nil {
+				t.Fatalf("GetDomainsFromHost() error: %v", err)
+			}
 
-		got, _ := store.GetDomainsFromHost()
-		want := []string{}
+			assertDomains(t, got, tt.expectedData)
+		})
+	}
+}
 
-		assertDomains(t, got, want)
-	})
-	t.Run("adding domains to hosts file", func(t *testing.T) {
-		tempHostsFile, cleanFile := createTempFile(t, `
-		# comment
-		# comment
-		`)
-		defer cleanFile()
-		store := &HostsStore{hostsFile: tempHostsFile}
+func TestAddDomainsToHost(t *testing.T) {
+	tests := HostTest{
+		{
+			name:         "adding domains to empty hosts file",
+			initialData:  ``,
+			expectedData: []string{"www.instagram.com", "www.youtube.com"},
+		},
+		{
+			name: "overwriting domains to existing hosts file",
+			initialData: `
+			#focusmode:start
+			www.youtube.com
+			www.instagram.com
+			www.github.com
+			#focusmode:end
+			`,
+			expectedData: []string{"www.facebook.com", "www.amazon.com"},
+		},
+	}
 
-		got := []string{"www.instagram.com", "www.youtube.com", "www.facebook.com"}
-		defer store.Close()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tempHostsFile, cleanFile := createTempFile(t, tt.initialData)
+			defer cleanFile()
 
-		store.AddDomainsToHost(got)
-		want, _ := store.GetDomainsFromHost()
+			store := &HostsStore{hostsFile: tempHostsFile}
+			defer store.Close()
 
-		assertDomains(t, got, want)
-	})
+			// add domains to hosts file
+			store.AddDomainsToHost(tt.expectedData)
+
+			got, err := store.GetDomainsFromHost()
+			if err != nil {
+				t.Fatalf("GetDomainsFromHost() error: %v", err)
+			}
+			assertDomains(t, got, tt.expectedData)
+		})
+	}
 }
 
 func assertDomains(t testing.TB, got, want []string) {
