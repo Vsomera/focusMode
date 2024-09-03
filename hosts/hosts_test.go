@@ -138,6 +138,53 @@ func TestAddDomainsToHost(t *testing.T) {
 	}
 }
 
+func TestCleanDomainsFromHost(t *testing.T) {
+	tests := []struct {
+		name             string
+		initialData      string
+		expectedFileData string
+		expectedDomains  []string
+	}{
+		{
+			name: "delete all domains in host",
+			initialData: `# comment
+#comment
+#focusmode:start
+127.0.0.1 www.youtube.com
+127.0.0.1 www.instagram.com
+127.0.0.1 www.github.com
+#focusmode:end`,
+			expectedFileData: `# comment
+#comment
+#focusmode:start
+#focusmode:end`,
+			expectedDomains: []string{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tempHostsFile, cleanFile := createTempFile(t, tt.initialData)
+			defer cleanFile()
+
+			store := &HostsStore{hostsFile: tempHostsFile}
+			defer store.Close()
+
+			err := store.CleanDomains()
+			if err != nil {
+				t.Fatalf("CleanDomains() error: %v", err)
+			}
+
+			got, err := store.GetDomainsFromHost()
+			if err != nil {
+				t.Fatalf("GetDomainsFromHost() error: %v", err)
+			}
+			assertDomains(t, got, tt.expectedDomains)
+			assertFileData(t, tempHostsFile, tt.expectedFileData)
+		})
+	}
+}
+
 func assertDomains(t testing.TB, got, want []string) {
 	t.Helper()
 	if !reflect.DeepEqual(got, want) {
