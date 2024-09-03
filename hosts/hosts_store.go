@@ -44,71 +44,54 @@ func (hs *HostsStore) GetDomainsFromHost() ([]string, error) {
 		return domains, err
 	}
 
-	domains, err = extractDomainsFromData(string(data))
-	if err != nil {
-		return domains, err
-	}
-
-	return domains, nil
+	return extractDomainsFromData(string(data))
 }
 
 func (hs *HostsStore) CleanDomains() error {
-	// reset file pointer
 	if _, err := hs.hostsFile.Seek(0, io.SeekStart); err != nil {
 		return err
 	}
 
-	// skip BOM if present
 	reader := utfbom.SkipOnly(bufio.NewReader(hs.hostsFile))
 	data, err := io.ReadAll(reader)
 	if err != nil {
 		return err
 	}
-
-	// overwrite hosts with empty domains
-	newData, err := updateHostData(string(data), []string{})
+	cleanData, err := updateHostData(string(data), []string{})
 	if err != nil {
 		return err
 	}
 
-	if _, err := hs.hostsFile.Seek(0, 0); err != nil {
-		return err
-	}
-	if _, err := hs.hostsFile.WriteString(newData); err != nil {
-		return err
-	}
-	if err := hs.hostsFile.Truncate(int64(len(newData))); err != nil {
-		return err
-	}
-
-	return nil
+	return hs.writeDataToHostFile(cleanData)
 }
 
 func (hs *HostsStore) AddDomainsToHost(domains []string) error {
-	// reset file pointer
 	if _, err := hs.hostsFile.Seek(0, io.SeekStart); err != nil {
 		return err
 	}
 
-	// skip BOM if present
 	reader := utfbom.SkipOnly(bufio.NewReader(hs.hostsFile))
 	data, err := io.ReadAll(reader)
 	if err != nil {
 		return err
 	}
-
 	newData, err := updateHostData(string(data), domains)
 	if err != nil {
 		return err
 	}
 
+	return hs.writeDataToHostFile(newData)
+}
+
+func (hs *HostsStore) writeDataToHostFile(data string) error {
+
 	if _, err := hs.hostsFile.Seek(0, 0); err != nil {
 		return err
 	}
-	if _, err := hs.hostsFile.WriteString(newData); err != nil {
+	if _, err := hs.hostsFile.WriteString(data); err != nil {
 		return err
 	}
-	if err := hs.hostsFile.Truncate(int64(len(newData))); err != nil {
+	if err := hs.hostsFile.Truncate(int64(len(data))); err != nil {
 		return err
 	}
 
@@ -164,11 +147,7 @@ func extractDomainsFromData(data string) ([]string, error) {
 
 	}
 
-	if err := scanner.Err(); err != nil {
-		return domains, err
-	}
-
-	return domains, nil
+	return domains, scanner.Err()
 }
 
 // updates and overwrites domains within start-end markers
