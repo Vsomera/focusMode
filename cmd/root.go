@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/common-nighthawk/go-figure"
 	"github.com/spf13/cobra"
 	"github.com/vsomera/focusmode/hosts"
 )
@@ -16,7 +17,8 @@ var rootCmd = &cobra.Command{
 	Use:   "fmode",
 	Short: `Cli tool to block distracting websites`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Print("\nFocusMode\n\n| Cli Tool to block distracting websites, focus on what actually matters.\n\n")
+		figure.NewFigure("Focus Mode", "smisome1", true).Print()
+		fmt.Print("\n| Cli Tool to block distracting websites, focus on what actually matters.\n\n")
 	},
 }
 
