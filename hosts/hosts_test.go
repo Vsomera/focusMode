@@ -160,6 +160,31 @@ func TestCleanDomainsFromHost(t *testing.T) {
 #focusmode:end`,
 			expectedDomains: []string{},
 		},
+		{
+			name: "empty hosts markers",
+			initialData: `127.0.0.1 www.instagram.com
+# 0.0.0.0 www.docker.com
+#focusmode:start
+#focusmode:end`,
+			expectedFileData: `127.0.0.1 www.instagram.com
+# 0.0.0.0 www.docker.com
+#focusmode:start
+#focusmode:end`,
+			expectedDomains: []string{},
+		},
+		{
+			name: "empty hosts markers with stub domains",
+			initialData: `127.0.0.1 www.instagram.com
+# 0.0.0.0 www.docker.com
+#focusmode:start
+0.0.0.0 www.youtube.com
+#focusmode:end`,
+			expectedFileData: `127.0.0.1 www.instagram.com
+# 0.0.0.0 www.docker.com
+#focusmode:start
+#focusmode:end`,
+			expectedDomains: []string{},
+		},
 	}
 
 	for _, tt := range tests {
