@@ -9,12 +9,12 @@ import (
 	"github.com/vsomera/focusmode/hosts"
 )
 
-// TODO : implement cleaning domains, and selecting domains to delete
+// TODO : selecting domains to delete
 
 var store = hosts.NewHostsStore()
 
 var rootCmd = &cobra.Command{
-	Use:   "fmode",
+	Use:   "focusmode",
 	Short: `Cli tool to block distracting websites`,
 	Run: func(cmd *cobra.Command, args []string) {
 		figure.NewFigure("Focus Mode", "smisome1", true).Print()
@@ -32,6 +32,11 @@ var listCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		if len(domains) == 0 {
+			fmt.Print("\nBlacklist:\n\n|  No domains added\n\n")
+			return
+		}
+
 		fmt.Print("\nBlacklist:\n\n")
 		for i, d := range domains {
 			fmt.Printf("|  %v %s\n", i+1, d)
@@ -41,9 +46,32 @@ var listCmd = &cobra.Command{
 	},
 }
 
+var cleanCmd = &cobra.Command{
+	Use:   "clean",
+	Short: "Removes all domains in blacklist",
+	Run: func(cmd *cobra.Command, args []string) {
+
+		var confirm string
+
+		fmt.Print("\nClear all domains?\n\n|  Type 'y' to confirm [y/n] ")
+		fmt.Scan(&confirm)
+
+		if confirm == "y" || confirm == "Y" {
+			err := store.CleanDomains()
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			fmt.Print("\n|  All domains cleared\n\n")
+			return
+		}
+		fmt.Println("")
+	},
+}
+
 var addCmd = &cobra.Command{
 	Use:   "add",
-	Short: `Add domain(s) to block list`,
+	Short: `Add domain(s) to blacklist`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			fmt.Print("\nError:\n\n|  No domain arguments in command call\n\n")
@@ -80,5 +108,5 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.AddCommand(listCmd, addCmd)
+	rootCmd.AddCommand(listCmd, addCmd, cleanCmd)
 }
