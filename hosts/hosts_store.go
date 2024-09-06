@@ -18,7 +18,10 @@ const (
 	commentEnd       = "#focusmode:end"
 )
 
-var errNoDomains = errors.New("blacklist is empty, no domains present")
+var (
+	errNoDomains      = errors.New("blacklist is empty, no domains present")
+	errDomainNotFound = errors.New("domain not found in blacklist")
+)
 
 type HostsStore struct {
 	hostsFile *os.File
@@ -77,12 +80,17 @@ func (hs *HostsStore) DeleteDomainFromHost(domain string) error {
 		return errNoDomains
 	}
 
+	domainDeleted := false
 	newDomains := []string{}
 	for _, d := range currDomains {
 		if d == domain {
+			domainDeleted = true
 			continue
 		}
 		newDomains = append(newDomains, d)
+	}
+	if !domainDeleted {
+		return errDomainNotFound
 	}
 
 	return hs.AddDomainsToHost(newDomains)

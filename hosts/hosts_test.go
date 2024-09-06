@@ -178,6 +178,14 @@ func TestDeleteDomainFromHost(t *testing.T) {
 			expectedDomains:  []string{"www.facebook.com", "www.snapchat.com"},
 			expectedErr:      nil,
 		},
+		{
+			name:             "domain to delete not found",
+			domainToDelete:   "www.example.com",
+			initialData:      "#focusmode:start\n127.0.0.1 www.instagram.com\n127.0.0.1 www.facebook.com\n127.0.0.1 www.snapchat.com\n#focusmode:end",
+			expectedFileData: "#focusmode:start\n127.0.0.1 www.instagram.com\n127.0.0.1 www.facebook.com\n127.0.0.1 www.snapchat.com\n#focusmode:end",
+			expectedDomains:  []string{"www.instagram.com", "www.facebook.com", "www.snapchat.com"},
+			expectedErr:      errDomainNotFound,
+		},
 	}
 
 	for _, tt := range tests {
