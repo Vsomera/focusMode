@@ -2,6 +2,7 @@ package hosts
 
 import (
 	"bufio"
+	"errors"
 	"io"
 	"log"
 	"os"
@@ -16,6 +17,8 @@ const (
 	commentStart     = "#focusmode:start"
 	commentEnd       = "#focusmode:end"
 )
+
+var errNoDomains = errors.New("blacklist is empty, no domains present")
 
 type HostsStore struct {
 	hostsFile *os.File
@@ -63,6 +66,26 @@ func (hs *HostsStore) CleanDomains() error {
 	}
 
 	return hs.writeDataToHostFile(cleanData)
+}
+
+func (hs *HostsStore) DeleteDomainFromHost(domain string) error {
+	currDomains, err := hs.GetDomainsFromHost()
+	if err != nil {
+		return err
+	}
+	if len(currDomains) < 1 {
+		return errNoDomains
+	}
+
+	newDomains := []string{}
+	for _, d := range currDomains {
+		if d == domain {
+			continue
+		}
+		newDomains = append(newDomains, d)
+	}
+
+	return hs.AddDomainsToHost(newDomains)
 }
 
 func (hs *HostsStore) AddDomainsToHost(domains []string) error {
