@@ -50,20 +50,33 @@ var cleanCmd = &cobra.Command{
 	Use:   "clean",
 	Short: "Removes all domains in blacklist",
 	Run: func(cmd *cobra.Command, args []string) {
+		selectedDomain, _ := cmd.Flags().GetString("d")
+		action := "cleared all domains"
+		confirmMsg := "Clear all domains?"
+
+		if selectedDomain != "" {
+			action = fmt.Sprintf("removed %s from blacklist", selectedDomain)
+			confirmMsg = fmt.Sprintf("Remove %s from blacklist?", selectedDomain)
+		}
 
 		var confirm string
 
-		fmt.Print("\nClear all domains?\n\n|  Type 'y' to confirm [y/n] ")
+		fmt.Printf("\n%s\n\n|  Type 'y' to confirm [y/n] ", confirmMsg)
 		fmt.Scan(&confirm)
 
 		if confirm == "y" || confirm == "Y" {
-			err := store.CleanDomains()
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+			var err error
+			if selectedDomain != "" {
+				err = store.DeleteDomainFromHost(selectedDomain)
+			} else {
+				err = store.CleanDomains()
 			}
-			fmt.Print("\n|  All domains cleared\n\n")
-			return
+
+			if err != nil {
+				fmt.Printf("\nError:\n\n|  %s\n\n", err)
+				return
+			}
+			fmt.Printf("\n|  %s\n\n", action)
 		}
 		fmt.Println("")
 	},
@@ -109,4 +122,5 @@ func Execute() {
 
 func init() {
 	rootCmd.AddCommand(listCmd, addCmd, cleanCmd)
+	cleanCmd.Flags().String("d", "", "deletes a selected domain in the blacklist matching the given string")
 }
