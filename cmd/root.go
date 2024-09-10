@@ -9,16 +9,16 @@ import (
 	"github.com/vsomera/focusmode/hosts"
 )
 
-// TODO : selecting domains to delete
-
 var store = hosts.NewHostsStore()
+var logo = Color(figure.NewFigure("Focus Mode", "smisome1", true).String(), Blue)
 
 var rootCmd = &cobra.Command{
-	Use:   "focusmode",
-	Short: `Cli tool to block distracting websites`,
+	Use:     "focusmode",
+	Version: "1",
+	Short:   Color(`FocusMode - Cli tool to block distracting websites`, Blue),
 	Run: func(cmd *cobra.Command, args []string) {
-		figure.NewFigure("Focus Mode", "smisome1", true).Print()
-		fmt.Print("\n| Cli Tool to block distracting websites, focus on what actually matters.\n\n")
+		fmt.Println(logo)
+		fmt.Print("\n| Cli Tool to block distracting websites, run \"focusmode help\" for command info.\n\n")
 	},
 }
 
@@ -33,11 +33,12 @@ var listCmd = &cobra.Command{
 		}
 
 		if len(domains) == 0 {
-			fmt.Print("\nBlacklist:\n\n|  No domains added\n\n")
+			fmt.Print(Color("\nBlacklist:\n\n", Blue))
+			fmt.Print("|  No domains added\n\n")
 			return
 		}
 
-		fmt.Print("\nBlacklist:\n\n")
+		fmt.Print(Color("\nBlacklist:\n\n", Blue))
 		for i, d := range domains {
 			fmt.Printf("|  %v %s\n", i+1, d)
 		}
@@ -51,12 +52,12 @@ var cleanCmd = &cobra.Command{
 	Short: "Removes all domains in blacklist",
 	Run: func(cmd *cobra.Command, args []string) {
 		selectedDomain, _ := cmd.Flags().GetString("d")
-		action := "cleared all domains"
-		confirmMsg := "Clear all domains?"
+		action := Color("cleared all domains", Green)
+		confirmMsg := Color("Clear all domains?", Yellow)
 
 		if selectedDomain != "" {
-			action = fmt.Sprintf("removed %s from blacklist", selectedDomain)
-			confirmMsg = fmt.Sprintf("Remove %s from blacklist?", selectedDomain)
+			action = Color(fmt.Sprintf("removed %s from blacklist", selectedDomain), Green)
+			confirmMsg = Color(fmt.Sprintf("Remove %s from blacklist?", selectedDomain), Yellow)
 		}
 
 		var confirm string
@@ -73,10 +74,11 @@ var cleanCmd = &cobra.Command{
 			}
 
 			if err != nil {
-				fmt.Printf("\nError:\n\n|  %s\n\n", err)
+				errMsg := fmt.Sprintf("\nError:\n\n|  %s\n\n", err)
+				fmt.Print(Color(errMsg, Red))
 				return
 			}
-			fmt.Printf("\n|  %s\n\n", action)
+			fmt.Print(Color(fmt.Sprintf("\n|  %s\n", action), Green))
 		}
 		fmt.Println("")
 	},
@@ -87,7 +89,7 @@ var addCmd = &cobra.Command{
 	Short: `Add domain(s) to blacklist`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
-			fmt.Print("\nError:\n\n|  No domain arguments in command call\n\n")
+			fmt.Print(Color("\nError:\n\n|  No domain arguments in command call\n\n", Red))
 			return
 		}
 
@@ -103,7 +105,7 @@ var addCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		fmt.Print("\nAdded domain(s) to Blacklist:\n\n")
+		fmt.Print(Color("\nAdded domain(s) to Blacklist:\n\n", Green))
 		for i, d := range args {
 			fmt.Printf("|  %v %s\n", i+1, d)
 		}
