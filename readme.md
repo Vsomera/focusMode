@@ -1,5 +1,5 @@
 
-# Focus Mode ??
+# Focus Mode 🌃
 
 Command Line Tool for blocking distracting websites, helping you focus on what actually matters.
 - Only Windows 10 & 11 are supported
@@ -11,10 +11,6 @@ Install focus mode with go
 ```bash
 go install github.com/Vsomera/focusMode
 ```
-
-
-
-
     
 ## Usage and Examples
 
@@ -29,7 +25,6 @@ PS C:\User> focusmode
              \/__/     \/__/     \/__/     \/__/       \/__/     \/__/     \/__/     \/__/
 
 | Cli Tool to block distracting websites, run "focusmode help" for command info.
-
 ```
 - Adding domain(s) to blacklist `focusmode add "www.example.com" ...`
 ```
@@ -68,5 +63,4 @@ Clear all domains?
 
 |  Type 'y' to confirm [y/n] y
 |  cleared all domains
-
 ```
