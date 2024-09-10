@@ -3,6 +3,7 @@
 
 Command Line Tool for blocking distracting websites, helping you focus on what actually matters.
 - Only Windows 10 & 11 are supported
+- Requires admin terminal to execute commands
 
 ## Installation
 
