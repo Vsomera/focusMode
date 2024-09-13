@@ -1,4 +1,4 @@
-module github.com/vsomera/focusmode
+module github.com/Vsomera/focusmode
 
 go 1.22.4
 

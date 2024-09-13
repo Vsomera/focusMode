@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/Vsomera/focusmode/hosts"
 	"github.com/common-nighthawk/go-figure"
 	"github.com/spf13/cobra"
-	"github.com/vsomera/focusmode/hosts"
 )
 
 var store = hosts.NewHostsStore()
