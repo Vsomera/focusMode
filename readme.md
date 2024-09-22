@@ -13,7 +13,7 @@ Clone repo and install with go
 # requires admin terminal to execute commands
 git clone https://github.com/Vsomera/focusMode.git
 cd focusMode
-go install github.com/Vsomera/focusMode
+go install
 ```
     
 ## Usage and Examples
