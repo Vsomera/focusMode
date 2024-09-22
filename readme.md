@@ -7,9 +7,12 @@ Command Line Tool for blocking distracting websites, helping you focus on what a
 
 ## Installation
 
-Install focus mode with go
+Clone repo and install with go
 
 ```bash
+# requires admin terminal to execute commands
+git clone https://github.com/Vsomera/focusMode.git
+cd focusMode
 go install github.com/Vsomera/focusMode
 ```
     
