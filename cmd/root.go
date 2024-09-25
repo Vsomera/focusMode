@@ -47,7 +47,6 @@ var listCmd = &cobra.Command{
 	},
 }
 
-// TODO : implement '--a' flag
 var removeCmd = &cobra.Command{
 	Use:   "rm",
 	Short: "Removes selected or all domains in blacklist",
@@ -75,10 +74,6 @@ var removeCmd = &cobra.Command{
 				os.Exit(1)
 			}
 
-			fmt.Print(Color(fmt.Sprintf("\nDeleted %d domain(s) from Blacklist:\n\n", len(args)), Green))
-			for i, d := range args {
-				fmt.Printf("|  %v %s\n", i+1, d)
-			}
 		}
 		fmt.Println("")
 	},
@@ -124,5 +119,4 @@ func Execute() {
 
 func init() {
 	rootCmd.AddCommand(listCmd, addCmd, removeCmd)
-	removeCmd.Flags().String("a", "", "deletes all domains")
 }
