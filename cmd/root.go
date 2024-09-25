@@ -23,7 +23,7 @@ var rootCmd = &cobra.Command{
 }
 
 var listCmd = &cobra.Command{
-	Use:   "list",
+	Use:   "ls",
 	Short: `Lists all domains that are currently being blocked`,
 	Run: func(cmd *cobra.Command, args []string) {
 		domains, err := store.GetDomainsFromHost()
@@ -47,38 +47,40 @@ var listCmd = &cobra.Command{
 	},
 }
 
-var cleanCmd = &cobra.Command{
-	Use:   "clean",
-	Short: "Removes all domains in blacklist",
+// TODO : implement '--a' flag
+var removeCmd = &cobra.Command{
+	Use:   "rm",
+	Short: "Removes selected or all domains in blacklist",
 	Run: func(cmd *cobra.Command, args []string) {
-		selectedDomain, _ := cmd.Flags().GetString("d")
-		action := Color("cleared all domains", Green)
-		confirmMsg := Color("Clear all domains?", Yellow)
-
-		if selectedDomain != "" {
-			action = Color(fmt.Sprintf("removed %s from blacklist", selectedDomain), Green)
-			confirmMsg = Color(fmt.Sprintf("Remove %s from blacklist?", selectedDomain), Yellow)
+		if len(args) == 0 {
+			fmt.Print(Color("\nError:\n\n|  No domain arguments or flag in command call\n\n", Red))
+			return
 		}
 
 		var confirm string
 
-		fmt.Printf("\n%s\n\n|  Type 'y' to confirm [y/n] ", confirmMsg)
+		confirmMsg := fmt.Sprintf("\nDelete %v domain(s)? \n\n|  Type 'y' to confirm [y/n] ", len(args))
+		fmt.Print(Color(confirmMsg, Yellow))
 		fmt.Scan(&confirm)
 
 		if confirm == "y" || confirm == "Y" {
 			var err error
-			if selectedDomain != "" {
-				err = store.DeleteDomainFromHost(selectedDomain)
-			} else {
-				err = store.CleanDomains()
+			// delete selected domains in args
+			for _, d := range args {
+				err = store.DeleteDomainFromHost(d)
 			}
 
 			if err != nil {
 				errMsg := fmt.Sprintf("\nError:\n\n|  %s\n\n", err)
 				fmt.Print(Color(errMsg, Red))
-				return
+				os.Exit(1)
 			}
-			fmt.Print(Color(fmt.Sprintf("\n|  %s\n", action), Green))
+
+			deleteMsg := fmt.Sprintf("\nDeleted %d domain(s) from Blacklist:\n\n", len(args))
+			fmt.Print(Color(deleteMsg, Green))
+			for i, d := range args {
+				fmt.Printf("|  %v %s\n", i+1, d)
+			}
 		}
 		fmt.Println("")
 	},
@@ -123,6 +125,6 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.AddCommand(listCmd, addCmd, cleanCmd)
-	cleanCmd.Flags().String("d", "", "deletes a selected domain in the blacklist matching the given string")
+	rootCmd.AddCommand(listCmd, addCmd, removeCmd)
+	removeCmd.Flags().String("a", "", "deletes all domains")
 }
