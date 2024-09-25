@@ -59,25 +59,23 @@ var removeCmd = &cobra.Command{
 
 		var confirm string
 
-		confirmMsg := fmt.Sprintf("\nDelete %v domain(s)? \n\n|  Type 'y' to confirm [y/n] ", len(args))
-		fmt.Print(Color(confirmMsg, Yellow))
+		fmt.Print(Color(fmt.Sprintf("\nDelete %v domain(s)? \n\n|  Type 'y' to confirm [y/n] ", len(args)), Yellow))
 		fmt.Scan(&confirm)
 
 		if confirm == "y" || confirm == "Y" {
+
 			var err error
-			// delete selected domains in args
+
 			for _, d := range args {
 				err = store.DeleteDomainFromHost(d)
 			}
 
 			if err != nil {
-				errMsg := fmt.Sprintf("\nError:\n\n|  %s\n\n", err)
-				fmt.Print(Color(errMsg, Red))
+				fmt.Print(Color(fmt.Sprintf("\nError:\n\n|  %s\n\n", err), Red))
 				os.Exit(1)
 			}
 
-			deleteMsg := fmt.Sprintf("\nDeleted %d domain(s) from Blacklist:\n\n", len(args))
-			fmt.Print(Color(deleteMsg, Green))
+			fmt.Print(Color(fmt.Sprintf("\nDeleted %d domain(s) from Blacklist:\n\n", len(args)), Green))
 			for i, d := range args {
 				fmt.Printf("|  %v %s\n", i+1, d)
 			}
