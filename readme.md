@@ -49,7 +49,7 @@ Blacklist:
 |  2 www.steam.com
 ```
 
-- Removing a single domain `focusmode rm "www.example.com"`
+- Removing a single domain `focusmode rm "www.instagram.com"`
 
 ```
 PS C:\User> focusmode rm "www.instagram.com"

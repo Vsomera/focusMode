@@ -53,24 +53,6 @@ func (hs *HostsStore) GetDomainsFromHost() ([]string, error) {
 	return extractDomainsFromData(string(data))
 }
 
-func (hs *HostsStore) CleanDomains() error {
-	if _, err := hs.hostsFile.Seek(0, io.SeekStart); err != nil {
-		return err
-	}
-
-	reader := utfbom.SkipOnly(bufio.NewReader(hs.hostsFile))
-	data, err := io.ReadAll(reader)
-	if err != nil {
-		return err
-	}
-	cleanData, err := updateHostData(string(data), []string{})
-	if err != nil {
-		return err
-	}
-
-	return hs.writeDataToHostFile(cleanData)
-}
-
 func (hs *HostsStore) DeleteDomainFromHost(domain string) error {
 	currDomains, err := hs.GetDomainsFromHost()
 	if err != nil {

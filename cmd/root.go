@@ -49,26 +49,21 @@ var listCmd = &cobra.Command{
 
 var removeCmd = &cobra.Command{
 	Use:   "rm",
-	Short: "Removes selected or all domains in blacklist",
+	Short: "Removes selected domain in blacklist, can only remove 1 domain at a time",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
-			fmt.Print(Color("\nError:\n\n|  No domain arguments or flag in command call\n\n", Red))
+			fmt.Print(Color("\nError:\n\n|  No domain arguments in command call\n\n", Red))
 			return
 		}
 
 		var confirm string
 
-		fmt.Print(Color(fmt.Sprintf("\nDelete %v domain(s)? \n\n|  Type 'y' to confirm [y/n] ", len(args)), Yellow))
+		fmt.Print(Color(fmt.Sprintf("\nRemove %s from blacklist? \n\n|  Type 'y' to confirm [y/n] ", args[0]), Yellow))
 		fmt.Scan(&confirm)
 
 		if confirm == "y" || confirm == "Y" {
 
-			var err error
-
-			for _, d := range args {
-				err = store.DeleteDomainFromHost(d)
-			}
-
+			err := store.DeleteDomainFromHost(args[0])
 			if err != nil {
 				fmt.Print(Color(fmt.Sprintf("\nError:\n\n|  %s\n\n", err), Red))
 				os.Exit(1)
