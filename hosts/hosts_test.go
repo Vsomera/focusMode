@@ -103,56 +103,6 @@ func TestAddDomainsToHost(t *testing.T) {
 	}
 }
 
-func TestCleanDomainsFromHost(t *testing.T) {
-	tests := []struct {
-		name             string
-		initialData      string
-		expectedFileData string
-		expectedDomains  []string
-	}{
-		{
-			name:             "delete all domains in host",
-			initialData:      "# comment\n#comment\n#focusmode:start\n127.0.0.1 www.youtube.com\n127.0.0.1 www.instagram.com\n127.0.0.1 www.github.com\n#focusmode:end",
-			expectedFileData: "# comment\n#comment\n#focusmode:start\n#focusmode:end",
-			expectedDomains:  []string{},
-		},
-		{
-			name:             "empty hosts markers",
-			initialData:      "127.0.0.1 www.instagram.com\n# 0.0.0.0 www.docker.com\n#focusmode:start\n#focusmode:end",
-			expectedFileData: "127.0.0.1 www.instagram.com\n# 0.0.0.0 www.docker.com\n#focusmode:start\n#focusmode:end",
-			expectedDomains:  []string{},
-		},
-		{
-			name:             "empty hosts markers with stub domains",
-			initialData:      "127.0.0.1 www.instagram.com\n# 0.0.0.0 www.docker.com\n#focusmode:start\n0.0.0.0 www.youtube.com\n#focusmode:end",
-			expectedFileData: "127.0.0.1 www.instagram.com\n# 0.0.0.0 www.docker.com\n#focusmode:start\n#focusmode:end",
-			expectedDomains:  []string{},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tempHostsFile, cleanFile := createTempFile(t, tt.initialData)
-			defer cleanFile()
-
-			store := &HostsStore{hostsFile: tempHostsFile}
-			defer store.Close()
-
-			err := store.CleanDomains()
-			if err != nil {
-				t.Fatalf("CleanDomains() error: %v", err)
-			}
-
-			got, err := store.GetDomainsFromHost()
-			if err != nil {
-				t.Fatalf("GetDomainsFromHost() error: %v", err)
-			}
-			assertDomains(t, got, tt.expectedDomains)
-			assertFileData(t, tempHostsFile, tt.expectedFileData)
-		})
-	}
-}
-
 func TestDeleteDomainFromHost(t *testing.T) {
 	tests := []struct {
 		name             string

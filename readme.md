@@ -30,7 +30,7 @@ PS C:\User> focusmode
 
 | Cli Tool to block distracting websites, run "focusmode help" for command info.
 ```
-- Adding domain(s) to blacklist `focusmode add "www.example.com" ...`
+- Adding domain(s) to blacklist `focusmode add "www.instagram.com" "www.steam.com" ...`
 ```
 PS C:\User> focusmode add "www.instagram.com" "www.steam.com"
 
@@ -39,9 +39,9 @@ Added domain(s) to Blacklist:
 |  1 www.instagram.com
 |  2 www.steam.com
 ```
-- Listing domains `focusmode list`
+- Listing domains `focusmode ls`
 ```
-PS C:\Users> focusmode list
+PS C:\Users> focusmode ls
 
 Blacklist:
 
@@ -49,22 +49,12 @@ Blacklist:
 |  2 www.steam.com
 ```
 
-- Removing a single domain `focusmode clean --d "www.example.com"`
+- Removing a single domain `focusmode rm "www.instagram.com"`
 
 ```
-PS C:\User> focusmode clean --d "www.instagram.com"
+PS C:\User> focusmode rm "www.instagram.com"
 
 Remove www.instagram.com from blacklist?
 
-|  Type 'y' to confirm [y/n] y
-|  removed www.instagram.com from blacklist
-```
-- Clearing blacklist `focusmode clean`
-```
-PS C:\User> focusmode clean
-
-Clear all domains?
-
-|  Type 'y' to confirm [y/n] y
-|  cleared all domains
+|  Type 'y' to confirm [y/n]
 ```

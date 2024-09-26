@@ -23,7 +23,7 @@ var rootCmd = &cobra.Command{
 }
 
 var listCmd = &cobra.Command{
-	Use:   "list",
+	Use:   "ls",
 	Short: `Lists all domains that are currently being blocked`,
 	Run: func(cmd *cobra.Command, args []string) {
 		domains, err := store.GetDomainsFromHost()
@@ -47,38 +47,29 @@ var listCmd = &cobra.Command{
 	},
 }
 
-var cleanCmd = &cobra.Command{
-	Use:   "clean",
-	Short: "Removes all domains in blacklist",
+var removeCmd = &cobra.Command{
+	Use:   "rm",
+	Short: "Removes selected domain in blacklist, can only remove 1 domain at a time",
 	Run: func(cmd *cobra.Command, args []string) {
-		selectedDomain, _ := cmd.Flags().GetString("d")
-		action := Color("cleared all domains", Green)
-		confirmMsg := Color("Clear all domains?", Yellow)
-
-		if selectedDomain != "" {
-			action = Color(fmt.Sprintf("removed %s from blacklist", selectedDomain), Green)
-			confirmMsg = Color(fmt.Sprintf("Remove %s from blacklist?", selectedDomain), Yellow)
+		if len(args) == 0 {
+			fmt.Print(Color("\nError:\n\n|  No domain arguments in command call\n\n", Red))
+			return
 		}
 
 		var confirm string
+		domainToDelete := args[0]
 
-		fmt.Printf("\n%s\n\n|  Type 'y' to confirm [y/n] ", confirmMsg)
+		fmt.Print(Color(fmt.Sprintf("\nRemove %s from blacklist? \n\n|  Type 'y' to confirm [y/n] ", domainToDelete), Yellow))
 		fmt.Scan(&confirm)
 
 		if confirm == "y" || confirm == "Y" {
-			var err error
-			if selectedDomain != "" {
-				err = store.DeleteDomainFromHost(selectedDomain)
-			} else {
-				err = store.CleanDomains()
+
+			err := store.DeleteDomainFromHost(domainToDelete)
+			if err != nil {
+				fmt.Print(Color(fmt.Sprintf("\nError:\n\n|  %s\n\n", err), Red))
+				os.Exit(1)
 			}
 
-			if err != nil {
-				errMsg := fmt.Sprintf("\nError:\n\n|  %s\n\n", err)
-				fmt.Print(Color(errMsg, Red))
-				return
-			}
-			fmt.Print(Color(fmt.Sprintf("\n|  %s\n", action), Green))
 		}
 		fmt.Println("")
 	},
@@ -123,6 +114,5 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.AddCommand(listCmd, addCmd, cleanCmd)
-	cleanCmd.Flags().String("d", "", "deletes a selected domain in the blacklist matching the given string")
+	rootCmd.AddCommand(listCmd, addCmd, removeCmd)
 }
