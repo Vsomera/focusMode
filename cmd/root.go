@@ -57,13 +57,14 @@ var removeCmd = &cobra.Command{
 		}
 
 		var confirm string
+		domainToDelete := args[0]
 
-		fmt.Print(Color(fmt.Sprintf("\nRemove %s from blacklist? \n\n|  Type 'y' to confirm [y/n] ", args[0]), Yellow))
+		fmt.Print(Color(fmt.Sprintf("\nRemove %s from blacklist? \n\n|  Type 'y' to confirm [y/n] ", domainToDelete), Yellow))
 		fmt.Scan(&confirm)
 
 		if confirm == "y" || confirm == "Y" {
 
-			err := store.DeleteDomainFromHost(args[0])
+			err := store.DeleteDomainFromHost(domainToDelete)
 			if err != nil {
 				fmt.Print(Color(fmt.Sprintf("\nError:\n\n|  %s\n\n", err), Red))
 				os.Exit(1)
