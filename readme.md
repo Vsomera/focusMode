@@ -7,13 +7,10 @@ Command Line Tool for blocking distracting websites, helping you focus on what a
 
 ## Installation
 
-Clone repo and install with go
+Install with [go](https://go.dev/)
 
 ```bash
-# requires admin terminal to execute commands
-git clone https://github.com/Vsomera/focusMode.git
-cd focusMode
-go install
+go install github.com/Vsomera/focusmode@latest
 ```
     
 ## Usage and Examples
