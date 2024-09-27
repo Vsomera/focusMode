@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/Vsomera/focusmode/cmd"
+	"github.com/vsomera/focusmode/cmd"
 )
 
 func main() {
