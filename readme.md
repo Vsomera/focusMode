@@ -10,7 +10,7 @@ Command Line Tool for blocking distracting websites, helping you focus on what a
 Install with [go](https://go.dev/)
 
 ```bash
-go install github.com/Vsomera/focusmode@latest
+go install github.com/vsomera/focusmode@latest
 ```
     
 ## Usage and Examples
